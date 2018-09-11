@@ -1,0 +1,295 @@
+<?php
+// инициализация
+require_once($_SERVER['DOCUMENT_ROOT'].'/include/init.php');
+require_once($_SERVER['DOCUMENT_ROOT'].'/include/class/filials/filials.php');
+
+$work_sql = DB::select_array("SELECT w.CABS_ID,w.BEGDA, w.ENDDA, r.NAME_ATR,addr.REGION,addr.RAION,addr.POST_INDEX from Z_PIFM_SENDTOWEB.ZPI_FWORK as w LEFT JOIN Z_PIFM_SENDTOWEB.ZPI_TBWSPR_RATR as r ON w.KOD_ATR=r.KOD_ATR left join Z_PIFM_SENDTOWEB.ZPI_F_ADR as addr on w.cabs_id =addr.cabs_id right join belarusbank.filials as f on w.cabs_id = f.cabs_id WHERE (r.NAME_ATR LIKE '%Работа с клиентами%' OR r.NAME_ATR LIKE '%перерыв%') ORDER BY r.KOD_ATR ASC");
+
+foreach ($work_sql as $value) {
+    $value['BEGDA'] = substr($value['BEGDA'], 0, -3);
+    $value['ENDDA'] = substr($value['ENDDA'], 0, -3);
+    switch($value['NAME_ATR']) {
+        case 'Понедельник. Работа с клиентами':
+            $result[$value['CABS_ID']]['work']['Понедельник']['general']['BEGDA'] = trim($value['BEGDA']);
+             $result[$value['CABS_ID']]['work']['Понедельник']['general']['ENDDA'] = trim($value['ENDDA']);
+        break;
+        case 'Понедельник. Обеденный перерыв':
+            $result[$value['CABS_ID']]['work']['Понедельник']['pereriv']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Понедельник']['pereriv']['ENDDA'] = trim(trim($value['ENDDA']));
+        break;
+
+        case 'Вторник. Работа с клиентами':
+            $result[$value['CABS_ID']]['work']['Вторник']['general']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Вторник']['general']['ENDDA'] = trim($value['ENDDA']);
+        break;
+        case 'Вторник. Обеденный перерыв':
+            $result[$value['CABS_ID']]['work']['Вторник']['pereriv']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Вторник']['pereriv']['ENDDA'] = trim($value['ENDDA']);
+        break;
+
+        case 'Среда. Работа с клиентами':
+            $result[$value['CABS_ID']]['work']['Среда']['general']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Среда']['general']['ENDDA'] = trim($value['ENDDA']);
+        break;
+        case 'Среда. Обеденный перерыв':
+            $result[$value['CABS_ID']]['work']['Среда']['pereriv']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Среда']['pereriv']['ENDDA'] = trim($value['ENDDA']);
+        break;
+
+        case 'Четверг. Работа с клиентами':
+            $result[$value['CABS_ID']]['work']['Четверг']['general']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Четверг']['general']['ENDDA'] = trim($value['ENDDA']);
+        break;
+        case 'Четверг. Обеденный перерыв':
+            $result[$value['CABS_ID']]['work']['Четверг']['pereriv']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Четверг']['pereriv']['ENDDA'] = trim($value['ENDDA']);
+        break;
+
+        case 'Пятница. Работа с клиентами':
+            $result[$value['CABS_ID']]['work']['Пятница']['general']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Пятница']['general']['ENDDA'] = trim($value['ENDDA']);
+        break;
+        case 'Пятница. Обеденный перерыв':
+            $result[$value['CABS_ID']]['work']['Пятница']['pereriv']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Пятница']['pereriv']['ENDDA'] = trim($value['ENDDA']);
+        break;
+
+        case 'Суббота. Работа с клиентами':
+            $result[$value['CABS_ID']]['work']['Суббота']['general']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Суббота']['general']['ENDDA'] = trim($value['ENDDA']);
+        break;
+        case 'Суббота. Обеденный перерыв':
+            $result[$value['CABS_ID']]['work']['Суббота']['pereriv']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Суббота']['pereriv']['ENDDA'] = trim($value['ENDDA']);
+        break;
+
+        case 'Воскресенье. Работа с клиентами':
+            $result[$value['CABS_ID']]['work']['Воскресенье']['general']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Воскресенье']['general']['ENDDA'] = trim($value['ENDDA']);
+        break;
+        case 'Воскресенье. Обеденный перерыв':
+            $result[$value['CABS_ID']]['work']['Воскресенье']['pereriv']['BEGDA'] = trim($value['BEGDA']);
+            $result[$value['CABS_ID']]['work']['Воскресенье']['pereriv']['ENDDA'] = trim($value['ENDDA']);
+        break;
+    }
+    $result[$value['CABS_ID']]['REGION'] = $value['REGION'];
+    $result[$value['CABS_ID']]['RAION'] = $value['RAION'];
+    $result[$value['CABS_ID']]['POST_INDEX'] = $value['POST_INDEX'];
+
+}
+
+$MASS = DB::select_array("SELECT *,if(f.subnum!='',CONCAT(ft.type_name, ' ',f.num, '/',f.subnum),CONCAT(ft.type_name, ' ',f.num) )as fil_name FROM filials as f, filials_type as ft, map as m
+                      WHERE f.city_id=m.idkey AND f.type=ft.type_id AND f.type in (1,2,3,4,5,6,7,8)
+                      ORDER BY m.name ASC,f.street ASC, CAST(f.home_number AS signed)"
+                    );
+
+  $Work = array();
+  foreach ($MASS as $v) {
+      $Work[$v["cabs_id"]] = explode("|",trim($v["info_worktime"]));
+          $Work[$v["cabs_id"]]['general']['Пн'] = explode(" ", trim($Work[$v["cabs_id"]][0]));
+          if (isset( $Work[$v["cabs_id"]]['general']['Пн'][7]) &&  $Work[$v["cabs_id"]]['general']['Пн'][7] !='') {
+               $Work[$v["cabs_id"]]['general']['rejim']['Пн'] .= $Work[$v["cabs_id"]]['general']['Пн'][1].":".$Work[$v["cabs_id"]]['general']['Пн'][2]."-".$Work[$v["cabs_id"]]['general']['Пн'][5].":".$Work[$v["cabs_id"]]['general']['Пн'][6].", ". $Work[$v["cabs_id"]]['general']['Пн'][7].":".$Work[$v["cabs_id"]]['general']['Пн'][8]."-".$Work[$v["cabs_id"]]['general']['Пн'][3].":".$Work[$v["cabs_id"]]['general']['Пн'][4];
+          }
+          if (empty( $Work[$v["cabs_id"]]['general']['Пн'][1])) {
+             $Work[$v["cabs_id"]]['general']['rejim']['Пн'] .= "x";
+          }
+          if (empty( $Work[$v["cabs_id"]]['general']['Пн'][5]) && !empty($Work[$v["cabs_id"]]['general']['Пн'][1])) {
+             $Work[$v["cabs_id"]]['general']['rejim']['Пн'] .= "y";
+          }
+
+          // $Work[$v["cabs_id"]]['general']['Вт'] = explode(" ", trim($Work[$v["cabs_id"]][1]));
+          // if (isset( $Work[$v["cabs_id"]]['general']['Вт'][7]) &&  $Work[$v["cabs_id"]]['general']['Вт'][7] !='') {
+          //      $Work[$v["cabs_id"]]['general']['rejim']['Вт'] .= $Work[$v["cabs_id"]]['general']['Вт'][1].":".$Work[$v["cabs_id"]]['general']['Вт'][2]."-".$Work[$v["cabs_id"]]['general']['Вт'][5].":".$Work[$v["cabs_id"]]['general']['Вт'][6].", ". $Work[$v["cabs_id"]]['general']['Вт'][7].":".$Work[$v["cabs_id"]]['general']['Вт'][8]."-".$Work[$v["cabs_id"]]['general']['Вт'][3].":".$Work[$v["cabs_id"]]['general']['Вт'][4];
+          // }
+          // if (empty( $Work[$v["cabs_id"]]['general']['Вт'][1])) {
+          //    $Work[$v["cabs_id"]]['general']['rejim']['Вт'] .= "x";
+          // }
+          // $Work[$v["cabs_id"]]['general']['Ср'] = explode(" ", $Work[$v["cabs_id"]][2]);
+          // if (isset( $Work[$v["cabs_id"]]['general']['Ср'][7]) &&  $Work[$v["cabs_id"]]['general']['Ср'][7] !='') {
+          //      $Work[$v["cabs_id"]]['general']['rejim']['Ср'] .= $Work[$v["cabs_id"]]['general']['Ср'][1].":".$Work[$v["cabs_id"]]['general']['Ср'][2]."-".$Work[$v["cabs_id"]]['general']['Ср'][5].":".$Work[$v["cabs_id"]]['general']['Ср'][6].", ". $Work[$v["cabs_id"]]['general']['Ср'][7].":".$Work[$v["cabs_id"]]['general']['Ср'][8]."-".$Work[$v["cabs_id"]]['general']['Ср'][3].":".$Work[$v["cabs_id"]]['general']['Ср'][4];
+          // }
+
+          // $Work[$v["cabs_id"]]['general']['Чт'] = explode(" ", $Work[$v["cabs_id"]][3]);
+          // if (isset( $Work[$v["cabs_id"]]['general']['Чт'][7]) &&  $Work[$v["cabs_id"]]['general']['Чт'][7] !='') {
+          //      $Work[$v["cabs_id"]]['general']['rejim']['Чт'] .= $Work[$v["cabs_id"]]['general']['Чт'][1].":".$Work[$v["cabs_id"]]['general']['Чт'][2]."-".$Work[$v["cabs_id"]]['general']['Чт'][5].":".$Work[$v["cabs_id"]]['general']['Чт'][6].", ". $Work[$v["cabs_id"]]['general']['Чт'][7].":".$Work[$v["cabs_id"]]['general']['Чт'][8]."-".$Work[$v["cabs_id"]]['general']['Чт'][3].":".$Work[$v["cabs_id"]]['general']['Чт'][4];
+          // }
+
+          // $Work[$v["cabs_id"]]['general']['Пт'] = explode(" ", $Work[$v["cabs_id"]][4]);
+          // if (isset( $Work[$v["cabs_id"]]['general']['Пт'][7]) &&  $Work[$v["cabs_id"]]['general']['Пт'][7] !='') {
+          //      $Work[$v["cabs_id"]]['general']['rejim']['Пт'] .= $Work[$v["cabs_id"]]['general']['Пт'][1].":".$Work[$v["cabs_id"]]['general']['Пт'][2]."-".$Work[$v["cabs_id"]]['general']['Пт'][5].":".$Work[$v["cabs_id"]]['general']['Пт'][6].", ". $Work[$v["cabs_id"]]['general']['Пт'][7].":".$Work[$v["cabs_id"]]['general']['Пт'][8]."-".$Work[$v["cabs_id"]]['general']['Пт'][3].":".$Work[$v["cabs_id"]]['general']['Пт'][4];
+          // }
+          // $Work[$v["cabs_id"]]['general']['Сб'] = explode(" ", $Work[$v["cabs_id"]][5]);
+          // if (isset( $Work[$v["cabs_id"]]['general']['Сб'][7]) &&  $Work[$v["cabs_id"]]['general']['Сб'][7] !='') {
+          //      $Work[$v["cabs_id"]]['general']['rejim']['Сб'] .= $Work[$v["cabs_id"]]['general']['Сб'][1].":".$Work[$v["cabs_id"]]['general']['Сб'][2]."-".$Work[$v["cabs_id"]]['general']['Сб'][5].":".$Work[$v["cabs_id"]]['general']['Сб'][6].", ". $Work[$v["cabs_id"]]['general']['Сб'][7].":".$Work[$v["cabs_id"]]['general']['Сб'][8]."-".$Work[$v["cabs_id"]]['general']['Сб'][3].":".$Work[$v["cabs_id"]]['general']['Сб'][4];
+          // }
+
+          // $Work[$v["cabs_id"]]['general']['Вс'] = explode(" ", $Work[$v["cabs_id"]][6]);
+          // if (isset( $Work[$v["cabs_id"]]['general']['Вс'][7]) &&  $Work[$v["cabs_id"]]['general']['Вс'][7] !='') {
+          //      $Work[$v["cabs_id"]]['general']['rejim']['Вс'] .= $Work[$v["cabs_id"]]['general']['Вс'][1].":".$Work[$v["cabs_id"]]['general']['Вс'][2]."-".$Work[$v["cabs_id"]]['general']['Вс'][5].":".$Work[$v["cabs_id"]]['general']['Вс'][6].", ". $Work[$v["cabs_id"]]['general']['Вс'][7].":".$Work[$v["cabs_id"]]['general']['Вс'][8]."-".$Work[$v["cabs_id"]]['general']['Вс'][3].":".$Work[$v["cabs_id"]]['general']['Вс'][4];
+          // }
+  }
+
+  F::debug($Work);
+return;
+
+?>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
+</head><body>
+<?
+
+header("Content-type: application/vnd.ms-excel");
+header('Content-disposition: attachment; filename="report_' . date("d.m.Y") . '.xls"');
+echo '<table  border="1">';
+  echo '<tr>';
+    echo '<td>Код филиала</td>';
+    echo '<td>Название компании</td>';
+    echo '<td>Основная категория</td>';
+    echo '<td>Страна или регион</td>';
+    echo '<td>Район</td>';
+    echo '<td>Населенный пункт</td>';  
+    echo '<td>Адрес, строка 1</td>';
+    echo '<td>Индекс</td>';
+    echo '<td>Широта</td>';
+    echo '<td>Долгота</td>';
+    echo '<td>Основной номер</td>';
+    echo '<td>Часы работы в понедельник</td>';
+    echo '<td>Часы работы во вторник</td>';
+    echo '<td>Часы работы в среду</td>';
+    echo '<td>Часы работы в четверг</td>';
+    echo '<td>Часы работы в пятницу</td>';
+    echo '<td>Часы работы в субботу</td>';
+    echo '<td>Часы работы в воскресенье</td>';
+    echo '<td>Веб-сайт</td>';
+    echo '<td>Информация от компании</td>';
+    
+    
+    
+
+  echo '</tr>';
+  $s=1;
+foreach ($MASS as $v) { 
+    
+ 
+        $city=DB::select_line("SELECT * FROM `map` WHERE idkey=?",$v["city_id"]); 
+        $_city=filials::getFormatCity($city['name_type'],$city['name']);
+  
+        $path=DB::select_array("SELECT * FROM `map` WHERE cat_left<=? AND cat_right>=? AND `type` IN (2,3,4) ORDER BY cat_level ASC",$city["cat_left"],$city["cat_right"]);
+          
+    echo '<tr>';
+        echo '<td>'.$s.'</td>';
+        echo '<td>Беларусбанк '.$v['fil_name'].'</td>';
+        echo '<td>Финансовое учреждение</td>';
+        if( count($path)-1 ){
+            for($i=0;$i<count($path)-1;$i++){
+              $p=$path[$i];
+              echo '<td>'.$p{name_type}.$p{name}.'</td>'; 
+            }
+          }
+        echo '<td>'.$_city.'</td>';   
+        echo '<td>'.filials::getFormatAddress($v['street_type'],$v['street'],$v['home_number']);
+        echo '</td>'; 
+        echo '<td>'.$result[$v['cabs_id']]['POST_INDEX'].'</td>';
+        echo '<td>'.$v['GPS_X'].'</td>';
+        echo '<td>'.$v['GPS_Y'].'</td>';
+        echo '<td>'.$v['del_info_phone'].'</td>';
+        echo '<td>';
+            if(isset($result[$v['cabs_id']]['work']['Понедельник']['pereriv']['BEGDA']) && $result[$v['cabs_id']]['work']['Понедельник']['pereriv']['BEGDA']){
+                echo $result[$v['cabs_id']]['work']['Понедельник']['general']['BEGDA']. " - ". $result[$v['cabs_id']]['work']['Понедельник']['pereriv']['BEGDA'].", ".$result[$v['cabs_id']]['work']['Понедельник']['pereriv']['ENDDA']." - ".$result[$v['cabs_id']]['work']['Понедельник']['general']['ENDDA'];
+            } else 
+            if (isset($result[$v['cabs_id']]['work']['Понедельник']['pereriv']['BEGDA']) && $result[$v['cabs_id']]['work']['Понедельник']['pereriv']['BEGDA'] !='') {
+                echo $result[$v['cabs_id']]['work']['Понедельник']['general']['BEGDA'] ." - ".$result[$v['cabs_id']]['work']['Понедельник']['general']['ENDDA'];
+            } else {
+               echo "x";
+            }
+        echo '</td>';
+        echo '<td>';
+            if(isset($result[$v['cabs_id']]['work']['Вторник']['pereriv']['BEGDA']) && isset($result[$v['cabs_id']]['work']['Вторник']['pereriv']['BEGDA']) !=''){
+                echo $result[$v['cabs_id']]['work']['Вторник']['general']['BEGDA']. " - ". $result[$v['cabs_id']]['work']['Вторник']['pereriv']['BEGDA'].", ".$result[$v['cabs_id']]['work']['Вторник']['pereriv']['ENDDA']." - ".$result[$v['cabs_id']]['work']['Вторник']['general']['ENDDA'];
+            } else
+            if (isset($result[$v['cabs_id']]['work']['Вторник']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Вторник']['pereriv']['BEGDA']) !='') {
+                echo $result[$v['cabs_id']]['work']['Вторник']['general']['BEGDA'] ." - ".$result[$v['cabs_id']]['work']['Вторник']['general']['ENDDA'];
+            }
+            else {
+               echo "x";
+            }
+        echo '</td>';
+        echo '<td>';
+            if(isset($result[$v['cabs_id']]['work']['Среда']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Среда']['pereriv']['BEGDA']) !=''){
+                echo $result[$v['cabs_id']]['work']['Среда']['general']['BEGDA']. " - ". $result[$v['cabs_id']]['work']['Среда']['pereriv']['BEGDA'].", ".$result[$v['cabs_id']]['work']['Среда']['pereriv']['ENDDA']." - ".$result[$v['cabs_id']]['work']['Среда']['general']['ENDDA'];
+            } else
+            if (isset($result[$v['cabs_id']]['work']['Среда']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Среда']['pereriv']['BEGDA']) !='') {
+                echo $result[$v['cabs_id']]['work']['Среда']['general']['BEGDA'] ." - ".$result[$v['cabs_id']]['work']['Среда']['general']['ENDDA'];
+            }else
+            {
+               echo "x";
+            }
+        echo '</td>';
+        echo '<td>';
+            if(isset($result[$v['cabs_id']]['work']['Четверг']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Четверг']['pereriv']['BEGDA']) !=''){
+                echo $result[$v['cabs_id']]['work']['Четверг']['general']['BEGDA']. " - ". $result[$v['cabs_id']]['work']['Четверг']['pereriv']['BEGDA'].", ".$result[$v['cabs_id']]['work']['Четверг']['pereriv']['ENDDA']." - ".$result[$v['cabs_id']]['work']['Четверг']['general']['ENDDA'];
+            } else 
+            if (isset($result[$v['cabs_id']]['work']['Четверг']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Четверг']['pereriv']['BEGDA']) !='') {
+                echo $result[$v['cabs_id']]['work']['Четверг']['general']['BEGDA'] ." - ".$result[$v['cabs_id']]['work']['Четверг']['general']['ENDDA'];
+            }
+            else{
+               echo "x";
+            }
+        echo '</td>';
+        echo '<td>';
+        if(isset($result[$v['cabs_id']]['work']['Пятница']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Пятница']['pereriv']['BEGDA']) !=''){
+                echo $result[$v['cabs_id']]['work']['Пятница']['general']['BEGDA']. " - ". $result[$v['cabs_id']]['work']['Пятница']['pereriv']['BEGDA'].", ".$result[$v['cabs_id']]['work']['Пятница']['pereriv']['ENDDA']." - ".$result[$v['cabs_id']]['work']['Пятница']['general']['ENDDA'];
+            }else
+            if (isset($result[$v['cabs_id']]['work']['Пятница']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Пятница']['pereriv']['BEGDA']) !='') {
+                echo $result[$v['cabs_id']]['work']['Пятница']['general']['BEGDA'] ." - ".$result[$v['cabs_id']]['work']['Пятница']['general']['ENDDA'];
+            }
+           else {
+               echo "x";
+            }
+        echo '</td>';
+        echo '<td>';
+            if(isset($result[$v['cabs_id']]['work']['Суббота']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Суббота']['pereriv']['BEGDA']) !=''){
+                echo $result[$v['cabs_id']]['work']['Суббота']['general']['BEGDA']. " - ". $result[$v['cabs_id']]['work']['Суббота']['pereriv']['BEGDA'].", ".$result[$v['cabs_id']]['work']['Суббота']['pereriv']['ENDDA']." - ".$result[$v['cabs_id']]['work']['Суббота']['general']['ENDDA'];
+            }else
+            if (isset($result[$v['cabs_id']]['work']['Суббота']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Суббота']['pereriv']['BEGDA']) !='') {
+                echo $result[$v['cabs_id']]['work']['Суббота']['general']['BEGDA'] ." - ".$result[$v['cabs_id']]['work']['Суббота']['general']['ENDDA'];
+            }
+            else {
+               echo "x";
+            }
+        echo '</td>';
+        echo '<td>';
+        if(isset($result[$v['cabs_id']]['work']['Воскресенье']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Воскресенье']['pereriv']['BEGDA']) !=''){
+                echo $result[$v['cabs_id']]['work']['Воскресенье']['general']['BEGDA']. " - ". $result[$v['cabs_id']]['work']['Воскресенье']['pereriv']['BEGDA'].", ".$result[$v['cabs_id']]['work']['Воскресенье']['pereriv']['ENDDA']." - ".$result[$v['cabs_id']]['work']['Воскресенье']['general']['ENDDA'];
+            }else
+            if (isset($result[$v['cabs_id']]['work']['Воскресенье']['pereriv']['BEGDA'])&& isset($result[$v['cabs_id']]['work']['Воскресенье']['pereriv']['BEGDA']) !='') {
+                echo $result[$v['cabs_id']]['work']['Воскресенье']['general']['BEGDA'] ." - ".$result[$v['cabs_id']]['work']['Воскресенье']['general']['ENDDA'];
+            }
+            else{
+               echo "x";
+            }
+        echo '</td>';
+        echo '<td><a href="/ru/33139/33142/structure/search_filials/~'.$v['tid'].'">Подробнее</a></td>';
+        echo '<td>ОАО "АСБ БЕЛАРУСБАНК" — Крупнейший банк Беларуси предлагает полный спектр банковских услуг. У нас Вы можете получить самую полную информацию об услугах банка. Ознакомиться с условиями кредитов и владов. Узнать текущие курсы валют. Беларусбанк — всегда рядом!</td>';
+
+    echo '</tr>';
+    $s++;
+}
+echo '<table>';
+
+
+
+
+
+// <!-- <?php
+// // инициализация
+// require_once($_SERVER['DOCUMENT_ROOT'].'/include/init.php');
+// require_once($_SERVER['DOCUMENT_ROOT'].'/include/class/filials/filials.php');
+// $work_sql = DB::select_array(" SELECT *,if(f.subnum!='',CONCAT(ft.type_name, ' ',f.num, '/',f.subnum),CONCAT(ft.type_name, ' ',f.num) ) as filial from
+//  belarusbank.filials as f LEFT JOIN belarusbank.filials_type as ft ON f.`type`=ft.type_id");
+// // F::debug($work_sql);
+// foreach ($work_sql as $v) {
+//    $W_temp=explode("|",$v["info_worktime"]); 
+
+// }F::debug($W_temp);
+
+// ?>
